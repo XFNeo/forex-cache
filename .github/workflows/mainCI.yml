@@ -21,28 +21,37 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
         cache: maven
+        
+    - name: Step 3 - Cache local Maven repository
+      uses: actions/cache@v3
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          ${{ runner.os }}-maven-
 
-    - name: Step 3 - Build with Maven
+    - name: Step 4 - Build with Maven
       run: mvn -B package --file pom.xml
 
-    - name: Step 4 - Docker meta
+    - name: Step 5 - Docker meta
       id: meta
       uses: docker/metadata-action@v4
       with:
         images: |
           xfneo/forex-cache
         tags: |
+          type=raw,value=latest,enable={{is_default_branch}}
           type=semver,pattern={{version}}
           type=semver,pattern={{major}}.{{minor}},enable=${{ !startsWith(github.ref, 'refs/tags/v0.0.') }}
           type=semver,pattern={{major}},enable=${{ !startsWith(github.ref, 'refs/tags/v0.') }}
 
-    - name: Step 5 - Login to Docker Hub
+    - name: Step 6 - Login to Docker Hub
       uses: docker/login-action@v2
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - name: Build and push
+    - name: Step 7 - Docker build and push
       uses: docker/build-push-action@v3
       with:
         context: .
