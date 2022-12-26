@@ -1,4 +1,6 @@
 # forex-cache Project
+![example workflow](https://github.com/XFNeo/forex-cache/actions/workflows/mainCI.yml/badge.svg)
+
 SECURITY_APIKEY_HEADER_NAME:apikey  
 SECURITY_APIKEY_HEADER_VALUE:change-me  
 
