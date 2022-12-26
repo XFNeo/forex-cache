@@ -20,11 +20,11 @@ public class ProxyServiceImpl implements ProxyService {
 
     @Override
     public ResponseData proxy(HttpServerRequest request, String body) {
-        final String uri = request.uri();
-        final String method = request.method().toString();
-        final String contentType = request.getHeader("Content-Type");
-        var requestData = new RequestData(uri, method, contentType, body);
-
+        var requestData = new RequestData(
+                request.uri(),
+                request.method().toString(),
+                request.getHeader("Content-Type"),
+                body);
 
         return repo.withCache(requestData.getDigest(), () -> client.proxyRequest(requestData));
     }
