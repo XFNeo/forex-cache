@@ -1,5 +1,6 @@
 package ru.xfneo.repo;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import ru.xfneo.entity.Updatable;
 
 import java.time.LocalDateTime;
@@ -12,14 +13,19 @@ public abstract class CacheRepo<T extends Updatable> {
 
     final private Object lock = new Object();
 
+    @ConfigProperty(name = "cache.validation.period.minutes")
+    int validationPeriodMinutes;
+
     protected abstract T save(String key, T responseData);
+
     protected abstract Optional<T> get(String key);
 
     public abstract List<T> getAll();
 
     public T withCache(String key, OmnivoreSupplier<T> supplier) {
         var optionalValue = get(key);
-        Function<Optional<T>, Boolean> check = (Optional<T> value) -> value.isPresent() && value.get().lastUpdate().plus(5, ChronoUnit.HOURS).isBefore(LocalDateTime.now());
+        Function<Optional<T>, Boolean> check = (Optional<T> value) -> value.isPresent()
+                    && value.get().lastUpdate().plus(validationPeriodMinutes, ChronoUnit.MINUTES).isBefore(LocalDateTime.now());
         if (check.apply(optionalValue)) {
             return optionalValue.get();
         }

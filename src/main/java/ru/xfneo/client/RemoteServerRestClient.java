@@ -31,7 +31,7 @@ public class RemoteServerRestClient {
             requestBody = RequestBody.create(requestData.requestBody(), MediaType.get(requestData.contentType()));
         }
         Request request = new Request.Builder()
-                .url(remoteServerHost + requestData.contentType())
+                .url(remoteServerHost + requestData.uri())
                 .addHeader(authHeaderName, authHeaderValue)
                 .method(requestData.method(), requestBody)
                 .build();
@@ -49,8 +49,8 @@ public class RemoteServerRestClient {
                 }
             }
         } else {
-            LOG.errorf("Unexpected response code %s", response.code());
-            throw new IOException("Unexpected response code " + response.code());
+            LOG.errorf("Received unexpected response code %d from origin server", response.code());
+            throw new IOException(String.format("Received unexpected response code %d from origin server", response.code()));
         }
     }
 }
