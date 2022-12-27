@@ -36,21 +36,26 @@ public class RemoteServerRestClient {
                 .method(requestData.method(), requestBody)
                 .build();
         LOG.infof("Request: %s", request);
-        Response response = client.newCall(request).execute();
-        LOG.infof("Received response: %s", response);
-        if (response.isSuccessful()) {
-            try (ResponseBody responseBody = response.body()) {
-                if (responseBody != null) {
-                    final String stringBody = responseBody.string();
-                    final String responseContentType = Optional.ofNullable(responseBody.contentType()).map(MediaType::toString).orElse("*/*");
-                    return new ResponseData(requestData, LocalDateTime.now(), stringBody, responseContentType);
-                } else {
-                    return new ResponseData(requestData, LocalDateTime.now(), null, null);
+        try {
+            Response response = client.newCall(request).execute();
+            LOG.infof("Received response: %s", response);
+            if (response.isSuccessful()) {
+                try (ResponseBody responseBody = response.body()) {
+                    if (responseBody != null) {
+                        final String stringBody = responseBody.string();
+                        final String responseContentType = Optional.ofNullable(responseBody.contentType()).map(MediaType::toString).orElse("*/*");
+                        return new ResponseData(requestData, LocalDateTime.now(), stringBody, responseContentType);
+                    } else {
+                        return new ResponseData(requestData, LocalDateTime.now(), null, null);
+                    }
                 }
+            } else {
+                LOG.errorf("Received unexpected response code %d from origin server", response.code());
+                throw new IOException(String.format("Received unexpected response code %d from origin server", response.code()));
             }
-        } else {
-            LOG.errorf("Received unexpected response code %d from origin server", response.code());
-            throw new IOException(String.format("Received unexpected response code %d from origin server", response.code()));
+        } catch (IOException e) {
+            LOG.errorf("Request to original server failed, err: %s ", e);
+            throw e;
         }
     }
 }
