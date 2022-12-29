@@ -52,9 +52,13 @@ jobs:
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
     - name: Step 7 - Docker build and push
+      id: docker_build
       uses: docker/build-push-action@v3
       with:
         context: .
         push: true
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
+
+    - name: Step 8 - Deploy docker image
+      run: echo ${{ steps.docker_build.outputs.digest }}
