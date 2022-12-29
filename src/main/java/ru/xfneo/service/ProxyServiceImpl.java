@@ -9,6 +9,8 @@ import ru.xfneo.repo.CacheRepo;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import static ru.xfneo.Constants.API_V1;
+
 @Singleton
 public class ProxyServiceImpl implements ProxyService {
 
@@ -21,7 +23,7 @@ public class ProxyServiceImpl implements ProxyService {
     @Override
     public ResponseData proxy(HttpServerRequest request, String body) {
         var requestData = new RequestData(
-                request.uri(),
+                request.uri().replaceFirst(API_V1, ""),
                 request.method().toString(),
                 request.getHeader("Content-Type"),
                 body);

@@ -8,9 +8,11 @@ import ru.xfneo.service.ProxyService;
 import javax.inject.Inject;
 import javax.ws.rs.*;
 
+import static ru.xfneo.Constants.API_V1;
+
 @Produces
 @Consumes
-@Path("/{path:.*}")
+@Path(API_V1 + "/{path:.*}")
 public class ProxyController {
 
     @Inject

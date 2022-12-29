@@ -11,6 +11,8 @@ import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
 
+import static ru.xfneo.Constants.HEALTH;
+
 @Priority(Priorities.USER + 5)
 @Provider
 public class SecurityFilter implements ContainerRequestFilter {
@@ -23,6 +25,9 @@ public class SecurityFilter implements ContainerRequestFilter {
 
     @Override
     public void filter(ContainerRequestContext requestContext) {
+        if (requestContext.getUriInfo().getRequestUri().getPath().equals(HEALTH)) {
+            return;
+        }
         final String apiKey = requestContext.getHeaderString(securityApiKeyHeaderName);
         if (apiKey == null || !apiKey.equals(securityApiKeyHeaderValue)) {
             LOG.warnf("API key is not valid, apikey = %s", apiKey);
