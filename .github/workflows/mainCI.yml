@@ -38,7 +38,7 @@ jobs:
       uses: docker/metadata-action@v4
       with:
         images: |
-          xfneo/forex-cache
+          ${{ secrets.DOCKER_IMAGE_NAME }}
         tags: |
           type=raw,value=latest,enable={{is_default_branch}}
           type=semver,pattern={{version}}
@@ -61,4 +61,13 @@ jobs:
         labels: ${{ steps.meta.outputs.labels }}
 
     - name: Step 8 - Deploy docker image
-      run: echo ${{ steps.docker_build.outputs.digest }}
+      env:
+        CONTAINER_RELOAD_TOKEN: ${{ secrets.CONTAINER_RELOAD_TOKEN }}
+        CONTAINER_RELOAD_URL: ${{ secrets.CONTAINER_RELOAD_URL }}
+        IMAGE: ${{ secrets.DOCKER_IMAGE_NAME }}@${{ steps.docker_build.outputs.digest }}
+      run: |
+        response_code=$(curl --request POST -s -o /dev/null -w "%{http_code}" ${CONTAINER_RELOAD_URL} -H "apikey: ${CONTAINER_RELOAD_TOKEN}" -H "Content-Type: application/json" --data-raw "{\"image\": \"${IMAGE}\"}")
+        if [ "${response_code}" != 200 ]; then
+          echo "response_code is ${response_code}"
+          exit 1
+        fi
