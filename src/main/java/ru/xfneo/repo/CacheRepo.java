@@ -29,13 +29,17 @@ public abstract class CacheRepo<T extends Expirable> {
 
         var dataOpt = get(key);
         if (existsAndNotExpired.apply(dataOpt)) {
-            return dataOpt.get();
+            final T data = dataOpt.get();
+            LOG.infof("Return value from the cache: %s", data.toString());
+            return data;
         }
 
         synchronized (lock) {
             dataOpt = get(key);
             if (existsAndNotExpired.apply(dataOpt)) {
-                return dataOpt.get();
+                final T data = dataOpt.get();
+                LOG.infof("Return value from the cache: %s", data.toString());
+                return data;
             }
 
             try {
