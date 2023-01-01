@@ -1,48 +1,47 @@
 package ru.xfneo.repo;
 
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
-import ru.xfneo.entity.Updatable;
+import ru.xfneo.entity.Expirable;
 
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
-public abstract class CacheRepo<T extends Updatable> {
+import static java.time.LocalDateTime.now;
+
+public abstract class CacheRepo<T extends Expirable> {
 
     private static final Logger LOG = Logger.getLogger(CacheRepo.class);
     final private Object lock = new Object();
-
-    @ConfigProperty(name = "cache.validation.period.minutes")
-    int validationPeriodMinutes;
 
     protected abstract T save(String key, T responseData);
 
     protected abstract Optional<T> get(String key);
 
-    public abstract List<T> getAll();
+    protected LocalDateTime getNow()  {
+        return now();
+    }
 
     public T withCache(String key, OmnivoreSupplier<T> supplier) {
-        Function<Optional<T>, Boolean> check = (Optional<T> value) -> value.isPresent()
-                && value.get().lastUpdate().plus(validationPeriodMinutes, ChronoUnit.MINUTES).isBefore(LocalDateTime.now());
+        var now = getNow();
+        Function<Optional<T>, Boolean> existsAndNotExpired = (Optional<T> value) ->
+                value.map(v -> v.expirationDate().isAfter(now)).orElse(false);
 
         var dataOpt = get(key);
-        if (check.apply(dataOpt)) {
+        if (existsAndNotExpired.apply(dataOpt)) {
             return dataOpt.get();
         }
 
         synchronized (lock) {
             dataOpt = get(key);
-            if (check.apply(dataOpt)) {
+            if (existsAndNotExpired.apply(dataOpt)) {
                 return dataOpt.get();
             }
 
             try {
                 dataOpt.ifPresentOrElse(
-                        data -> LOG.info("Value in the cache is expired. Request will be proxied to the original server, cache will be updated."),
-                        () -> LOG.info("Value does not exist in the cache. Request will be proxied to the original server, response will be cached."));
+                        data -> LOG.info("Value in the cache is expired, request data from supplier."),
+                        () -> LOG.info("Value does not exist in the cache, request data from supplier."));
                 var data = supplier.apply();
                 return save(key, data);
             } catch (Exception e) {

@@ -9,6 +9,7 @@ import ru.xfneo.entity.ResponseData;
 import javax.inject.Singleton;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
 
@@ -22,6 +23,8 @@ public class RemoteServerRestClient {
     String authHeaderName;
     @ConfigProperty(name = "origin.server.auth.header.value")
     String authHeaderValue;
+    @ConfigProperty(name = "cache.validation.period.minutes")
+    int validationPeriodMinutes;
 
     OkHttpClient client = new OkHttpClient().newBuilder().build();
 
@@ -45,9 +48,9 @@ public class RemoteServerRestClient {
                         final String stringBody = responseBody.string();
                         LOG.infof("Response body: %s", stringBody);
                         final String responseContentType = Optional.ofNullable(responseBody.contentType()).map(MediaType::toString).orElse("*/*");
-                        return new ResponseData(requestData, LocalDateTime.now(), stringBody, responseContentType);
+                        return new ResponseData(requestData, getExpirationDate(), stringBody, responseContentType);
                     } else {
-                        return new ResponseData(requestData, LocalDateTime.now(), null, null);
+                        return new ResponseData(requestData, getExpirationDate(), null, null);
                     }
                 }
             } else {
@@ -58,5 +61,9 @@ public class RemoteServerRestClient {
             LOG.errorf("Request to original server failed, err: %s ", e);
             throw e;
         }
+    }
+
+    private LocalDateTime getExpirationDate() {
+        return LocalDateTime.now().plus(validationPeriodMinutes, ChronoUnit.MINUTES);
     }
 }
