@@ -43,6 +43,7 @@ public class RemoteServerRestClient {
                 try (ResponseBody responseBody = response.body()) {
                     if (responseBody != null) {
                         final String stringBody = responseBody.string();
+                        LOG.infof("Response body: %s", stringBody);
                         final String responseContentType = Optional.ofNullable(responseBody.contentType()).map(MediaType::toString).orElse("*/*");
                         return new ResponseData(requestData, LocalDateTime.now(), stringBody, responseContentType);
                     } else {
