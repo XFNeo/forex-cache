@@ -24,7 +24,7 @@ public class ProxyController {
             final ResponseData responseData = proxyService.proxy(rc.request(), null);
             return RestResponse.ResponseBuilder.ok(responseData.responseBody(), responseData.contentType()).build();
         } catch (Exception e) {
-            return RestResponse.ResponseBuilder.<String>create(RestResponse.StatusCode.INTERNAL_SERVER_ERROR).entity(e.getCause().getMessage()).build();
+            return RestResponse.ResponseBuilder.<String>create(RestResponse.StatusCode.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
         }
     }
 
@@ -34,7 +34,7 @@ public class ProxyController {
             final ResponseData responseData = proxyService.proxy(rc.request(), body);
             return RestResponse.ResponseBuilder.ok(responseData.responseBody(), responseData.contentType()).build();
         } catch (Exception e) {
-            return RestResponse.ResponseBuilder.<String>create(RestResponse.StatusCode.INTERNAL_SERVER_ERROR).entity(e.getCause().getMessage()).build();
+            return RestResponse.ResponseBuilder.<String>create(RestResponse.StatusCode.INTERNAL_SERVER_ERROR).entity(e.getMessage()).build();
         }
     }
 }
