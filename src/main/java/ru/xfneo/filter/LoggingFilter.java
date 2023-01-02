@@ -11,6 +11,7 @@ import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Provider;
+import java.util.Optional;
 
 @Priority(Priorities.USER + 1)
 @Provider
@@ -29,6 +30,8 @@ public class LoggingFilter implements ContainerRequestFilter {
         final String method = context.getMethod();
         final String url = info.getRequestUri().toString();
         final String address = request.remoteAddress().toString();
-        LOG.infof("Request %s %s from IP %s", method, url, address);
+        final Optional<String> optionalXRealIP = Optional.ofNullable(request.headers().get("X-Real-IP"));
+        final Optional<String> optionalXFF = Optional.ofNullable(request.headers().get("X-Forwarded-For"));
+        LOG.infof("Request %s %s from IP:%s, real IP:%s", method, url, address, optionalXRealIP.or(() -> optionalXFF).orElse("none"));
     }
 }

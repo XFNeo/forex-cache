@@ -6,19 +6,21 @@ import ru.xfneo.entity.RequestData;
 import ru.xfneo.entity.ResponseData;
 import ru.xfneo.repo.CacheRepo;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import javax.enterprise.context.ApplicationScoped;
 
 import static ru.xfneo.Constants.API_V1;
 
-@Singleton
+@ApplicationScoped
 public class ProxyServiceImpl implements ProxyService {
 
-    @Inject
-    RemoteServerRestClient client;
+    private final RemoteServerRestClient client;
 
-    @Inject
-    CacheRepo<ResponseData> repo;
+    private final CacheRepo<ResponseData> repo;
+
+    public ProxyServiceImpl(RemoteServerRestClient client, CacheRepo<ResponseData> repo) {
+        this.client = client;
+        this.repo = repo;
+    }
 
     @Override
     public ResponseData proxy(HttpServerRequest request, String body) {

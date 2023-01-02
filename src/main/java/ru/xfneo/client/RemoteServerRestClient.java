@@ -6,14 +6,14 @@ import org.jboss.logging.Logger;
 import ru.xfneo.entity.RequestData;
 import ru.xfneo.entity.ResponseData;
 
-import javax.inject.Singleton;
+import javax.enterprise.context.ApplicationScoped;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
 
-@Singleton
+@ApplicationScoped
 public class RemoteServerRestClient {
 
     private static final Logger LOG = Logger.getLogger(RemoteServerRestClient.class);
@@ -44,14 +44,10 @@ public class RemoteServerRestClient {
             LOG.infof("Received response: %s", response);
             if (response.isSuccessful()) {
                 try (ResponseBody responseBody = response.body()) {
-                    if (responseBody != null) {
-                        final String stringBody = responseBody.string();
-                        LOG.infof("Response body: %s", stringBody);
-                        final String responseContentType = Optional.ofNullable(responseBody.contentType()).map(MediaType::toString).orElse("*/*");
-                        return new ResponseData(requestData, getExpirationDate(), stringBody, responseContentType);
-                    } else {
-                        return new ResponseData(requestData, getExpirationDate(), null, null);
-                    }
+                    final String stringBody = responseBody.string();
+                    LOG.infof("Response body: %s", stringBody);
+                    final String responseContentType = Optional.ofNullable(responseBody.contentType()).map(MediaType::toString).orElse("*/*");
+                    return new ResponseData(requestData, getExpirationDate(), stringBody, responseContentType);
                 }
             } else {
                 LOG.errorf("Received unexpected response code %d from origin server", response.code());

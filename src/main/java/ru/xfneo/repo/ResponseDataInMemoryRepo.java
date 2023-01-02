@@ -2,12 +2,12 @@ package ru.xfneo.repo;
 
 import ru.xfneo.entity.ResponseData;
 
-import javax.inject.Singleton;
+import javax.enterprise.context.ApplicationScoped;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-@Singleton
+@ApplicationScoped
 public class ResponseDataInMemoryRepo extends CacheRepo<ResponseData> {
 
     final Map<String, ResponseData> responseDataStorage = new ConcurrentHashMap<>();
